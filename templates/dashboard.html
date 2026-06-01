@@ -366,47 +366,38 @@ td {
 
 .modal-head-title { font-size: .9rem; font-weight: 600; color: var(--hi); }
 
-/* INFO GRID */
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+/* REQ BAR (compact summary) */
+.req-bar {
+  padding: .6rem 1.25rem;
   border-bottom: 1px solid var(--border2);
   flex-shrink: 0;
-}
-
-.info-row {
   display: flex;
   flex-direction: column;
-  padding: .75rem 1.25rem;
-  border-bottom: 1px solid var(--border2);
-  border-right: 1px solid var(--border2);
+  gap: .3rem;
 }
-
-.info-row:nth-child(2n) { border-right: none; }
-.info-row:nth-last-child(-n+2) { border-bottom: none; }
-
-.info-key {
-  font-size: .62rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .09em;
-  margin-bottom: .15rem;
+.req-bar-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem;
+  font-size: .72rem;
 }
-
-.info-hint {
-  font-size: .65rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-bottom: .2rem;
-}
-
-.info-val {
+.method-badge {
   font-family: var(--mono);
-  font-size: .78rem;
-  color: var(--hi);
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .12rem .45rem;
+  border-radius: 4px;
+  letter-spacing: .05em;
 }
+.method-post   { background: rgba(63,185,80,.15);   color: var(--green);  border: 1px solid rgba(63,185,80,.3); }
+.method-get    { background: rgba(88,166,255,.15);  color: var(--blue);   border: 1px solid rgba(88,166,255,.3); }
+.method-put    { background: rgba(210,153,34,.15);  color: var(--yellow); border: 1px solid rgba(210,153,34,.3); }
+.method-patch  { background: rgba(188,140,255,.15); color: var(--purple); border: 1px solid rgba(188,140,255,.3); }
+.method-delete { background: rgba(248,81,73,.15);   color: var(--red);    border: 1px solid rgba(248,81,73,.3); }
+.req-chip-label { color: var(--muted); font-size: .65rem; margin-right: .15rem; }
+.req-chip { color: var(--text); }
+.req-sep  { color: var(--border); }
 
 /* TABS */
 .tabs {
@@ -504,6 +495,72 @@ pre {
   transition: all .15s;
 }
 .copy-btn:hover { background: rgba(88,166,255,.16); }
+
+/* PAYLOAD SUMMARY */
+.payload-summary {
+  font-size: .7rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* HEADER CARDS */
+.header-card {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid var(--border2);
+  font-size: .75rem;
+}
+.header-card:last-child { border-bottom: none; }
+.header-key-friendly {
+  color: var(--muted);
+  font-size: .67rem;
+  min-width: 140px;
+  flex-shrink: 0;
+  font-style: italic;
+}
+.header-val {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--hi);
+  word-break: break-all;
+}
+.header-custom .header-key-friendly { color: var(--purple); font-style: normal; font-weight: 600; }
+.header-custom .header-val { color: var(--purple); }
+details.header-technical { margin-top: .6rem; }
+summary.header-technical-toggle {
+  font-size: .67rem;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  padding: .35rem 0;
+  border-top: 1px solid var(--border2);
+  user-select: none;
+}
+summary.header-technical-toggle::-webkit-details-marker { display: none; }
+.header-technical-inner { padding-top: .35rem; }
+
+/* QUERY PARAM PILLS */
+.qp-list { display: flex; flex-direction: column; gap: .45rem; }
+.qp-pill { display: flex; align-items: center; gap: .4rem; font-size: .75rem; }
+.qp-key  { font-family: var(--mono); color: var(--blue); font-size: .73rem; }
+.qp-eq   { color: var(--muted); }
+.qp-val  { font-family: var(--mono); color: var(--hi); word-break: break-all; }
+
+/* EMPTY PANE */
+.empty-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+.empty-pane-icon { font-size: 1.8rem; }
+.empty-pane-msg  { font-size: .78rem; color: var(--muted); }
+.empty-pane-sub  { font-size: .67rem; color: var(--muted); font-style: italic; max-width: 360px; line-height: 1.5; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -668,17 +725,17 @@ pre {
       <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕ Fechar</button>
     </div>
 
-    <div class="info-grid" id="modal-info"></div>
+    <div class="req-bar" id="modal-info"></div>
 
     <div class="tabs">
       <button class="tab active" onclick="switchTab('payload',this)">
         📦 Conteúdo (Payload)
       </button>
       <button class="tab" onclick="switchTab('headers',this)">
-        🔧 Cabeçalhos (Headers)
+        🔧 Cabeçalhos
       </button>
       <button class="tab" onclick="switchTab('query',this)">
-        🔗 Query Params
+        🔗 Parâmetros de URL
       </button>
     </div>
 
@@ -687,21 +744,9 @@ pre {
     </div>
 
     <div class="modal-body">
-      <div class="pane active" id="pane-payload">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:.5rem">
-          <button class="copy-btn" onclick="copyPre('pre-payload')">COPIAR</button>
-        </div>
-        <pre id="pre-payload"></pre>
-      </div>
-      <div class="pane" id="pane-headers">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:.5rem">
-          <button class="copy-btn" onclick="copyPre('pre-headers')">COPIAR</button>
-        </div>
-        <pre id="pre-headers"></pre>
-      </div>
-      <div class="pane" id="pane-query">
-        <pre id="pre-query"></pre>
-      </div>
+      <div class="pane active" id="pane-payload"></div>
+      <div class="pane" id="pane-headers"></div>
+      <div class="pane" id="pane-query"></div>
     </div>
   </div>
 </div>
@@ -710,10 +755,42 @@ pre {
 
 <script>
 const TAB_HINTS = {
-  payload: 'O conteúdo JSON enviado pelo sistema — é aqui que ficam os dados da nota fiscal.',
-  headers: 'Informações técnicas do envio: tipo de conteúdo, autenticação, agente que enviou, etc.',
-  query:   'Parâmetros passados na URL (ex: ?lote=Novembro). Útil para identificar o lote do disparo.'
+  payload: 'O conteúdo enviado pelo sistema — aqui ficam os dados da requisição.',
+  headers: 'Informações técnicas do envio: formato, autenticação, software que enviou e cabeçalhos personalizados.',
+  query:   'Parâmetros passados diretamente na URL, ex: ?lote=novembro&status=ativo.'
 };
+
+// Cabeçalhos com nomes amigáveis
+const HEADER_FRIENDLY = {
+  'content-type':    'Formato do conteúdo',
+  'content-length':  'Tamanho declarado',
+  'user-agent':      'Software que enviou',
+  'authorization':   'Chave de acesso',
+  'accept':          'Formatos aceitos',
+  'origin':          'Origem da requisição',
+  'referer':         'Página de origem',
+  'x-forwarded-for': 'IP real (via proxy)',
+  'x-real-ip':       'IP real',
+};
+
+// Cabeçalhos puramente técnicos de infraestrutura — ficam colapsados
+const TECHNICAL_HEADERS = new Set([
+  'host','connection','accept-encoding','keep-alive',
+  'transfer-encoding','upgrade-insecure-requests',
+  'cache-control','pragma','sec-fetch-mode',
+  'sec-fetch-dest','sec-fetch-site','sec-ch-ua',
+  'sec-ch-ua-mobile','sec-ch-ua-platform',
+]);
+
+// Armazena o texto bruto para o botão copiar dos headers
+let _rawHeaders = '{}';
+let _rawQuery   = '{}';
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function toast(msg, type='ok') {
   const el = document.getElementById('toast');
@@ -742,35 +819,152 @@ function hl(str) {
     });
 }
 
-function infoRow(key, hint, val, color='') {
-  return `<div class="info-row">
-    <span class="info-key">${key}</span>
-    <span class="info-hint">${hint}</span>
-    <span class="info-val" style="${color?'color:var(--'+color+')'':''}">${val}</span>
-  </div>`;
+/* ── RENDER PAYLOAD ── */
+function renderPayload(d) {
+  const pane = document.getElementById('pane-payload');
+  const raw = (d.payload || '').trim();
+
+  if (!raw) {
+    const isGet = (d.method || '').toUpperCase() === 'GET';
+    pane.innerHTML = `<div class="empty-pane">
+      <div class="empty-pane-icon">${isGet ? '🔍' : '📭'}</div>
+      <div class="empty-pane-msg">${isGet ? 'Requisição GET não carrega conteúdo' : 'Nenhum conteúdo foi enviado'}</div>
+      <div class="empty-pane-sub">${isGet
+        ? 'Isso é normal — GET é usado para consultas, não para enviar dados.'
+        : 'O sistema que disparou este webhook não incluiu dados no corpo da requisição.'}</div>
+    </div>`;
+    return;
+  }
+
+  let summary = 'Conteúdo em texto simples';
+  try {
+    const p = JSON.parse(raw);
+    if (Array.isArray(p)) {
+      summary = `Lista com <strong>${p.length}</strong> ${p.length === 1 ? 'item' : 'itens'}`;
+    } else if (p && typeof p === 'object') {
+      const n = Object.keys(p).length;
+      summary = `<strong>${n}</strong> ${n === 1 ? 'campo' : 'campos'} no conteúdo`;
+    } else {
+      summary = 'Valor único (número, texto ou booleano)';
+    }
+  } catch(e) {}
+
+  pane.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem">
+      <span class="payload-summary">${summary}</span>
+      <button class="copy-btn" onclick="copyPre('pre-payload')">COPIAR</button>
+    </div>
+    <pre id="pre-payload" style="min-height:180px"></pre>`;
+  document.getElementById('pre-payload').innerHTML = hl(raw);
 }
 
+/* ── RENDER HEADERS ── */
+function renderHeaders(headersStr) {
+  _rawHeaders = headersStr || '{}';
+  const pane  = document.getElementById('pane-headers');
+  let headers = {};
+  try { headers = JSON.parse(_rawHeaders); } catch(e) {}
+
+  const keys = Object.keys(headers);
+  if (keys.length === 0) {
+    pane.innerHTML = `<div class="empty-pane">
+      <div class="empty-pane-icon">📋</div>
+      <div class="empty-pane-msg">Nenhum cabeçalho registrado</div>
+    </div>`;
+    return;
+  }
+
+  const main = [], tech = [];
+  for (const k of keys) {
+    (TECHNICAL_HEADERS.has(k.toLowerCase()) ? tech : main).push(k);
+  }
+
+  function row(k) {
+    const kl    = k.toLowerCase();
+    const isCustom = kl.startsWith('x-');
+    const label = HEADER_FRIENDLY[kl] || (isCustom ? k : k);
+    return `<div class="header-card${isCustom ? ' header-custom' : ''}">
+      <span class="header-key-friendly">${escHtml(label)}</span>
+      <span class="header-val">${escHtml(headers[k])}</span>
+    </div>`;
+  }
+
+  let html = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:.6rem">
+      <button class="copy-btn" onclick="copyText(_rawHeaders)">COPIAR TUDO</button>
+    </div>
+    ${main.map(row).join('')}`;
+
+  if (tech.length > 0) {
+    html += `<details class="header-technical">
+      <summary class="header-technical-toggle">▶ Cabeçalhos técnicos de infraestrutura (${tech.length})</summary>
+      <div class="header-technical-inner">${tech.map(row).join('')}</div>
+    </details>`;
+  }
+
+  pane.innerHTML = html;
+}
+
+/* ── RENDER QUERY PARAMS ── */
+function renderQueryParams(qpStr) {
+  _rawQuery = qpStr || '{}';
+  const pane = document.getElementById('pane-query');
+  let qp = {};
+  try { qp = JSON.parse(_rawQuery); } catch(e) {}
+
+  const keys = Object.keys(qp);
+  if (keys.length === 0) {
+    pane.innerHTML = `<div class="empty-pane">
+      <div class="empty-pane-icon">🔗</div>
+      <div class="empty-pane-msg">Nenhum parâmetro de URL nesta requisição</div>
+      <div class="empty-pane-sub">Parâmetros ficam no final do endereço: <code style="font-family:var(--mono)">?lote=novembro&amp;status=ativo</code></div>
+    </div>`;
+    return;
+  }
+
+  pane.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.65rem">
+      <span class="payload-summary"><strong>${keys.length}</strong> ${keys.length === 1 ? 'parâmetro' : 'parâmetros'} na URL</span>
+      <button class="copy-btn" onclick="copyText(_rawQuery)">COPIAR</button>
+    </div>
+    <div class="qp-list">
+      ${keys.map(k => `<div class="qp-pill">
+        <span class="qp-key">${escHtml(k)}</span>
+        <span class="qp-eq">=</span>
+        <span class="qp-val">${escHtml(qp[k])}</span>
+      </div>`).join('')}
+    </div>`;
+}
+
+/* ── OPEN MODAL ── */
 async function openModal(id) {
   try {
     const d = await fetch(`/webhook/${id}`).then(r => r.json());
     document.getElementById('modal-title').textContent = `Webhook #${d.id} — ${d.lote}`;
 
-    const loc = [d.cidade, d.regiao, d.pais].filter(x=>x&&x!=='—').join(', ') || '—';
+    const loc = [d.cidade, d.regiao, d.pais].filter(x => x && x !== '—').join(', ') || null;
+    const mClass = 'method-' + (d.method || 'get').toLowerCase();
 
-    document.getElementById('modal-info').innerHTML =
-      infoRow('Lote / Identificador', 'Nome do grupo de disparos que este webhook pertence', d.lote, 'purple') +
-      infoRow('Data e Hora', 'Momento exato em que chegou neste servidor', d.timestamp) +
-      infoRow('IP de Origem', 'Endereço de rede de quem enviou este webhook', d.ip, 'yellow') +
-      infoRow('Localização', 'Cidade e país identificados a partir do IP', loc) +
-      infoRow('Tamanho', 'Quanto de dados foi enviado nesta requisição', d.tamanho_kb ? d.tamanho_kb.toFixed(2)+' KB' : '—') +
-      infoRow('Tempo de Processo', 'Tempo entre o recebimento e o início do registro', d.tempo_ms ? d.tempo_ms.toFixed(0)+' ms' : '—') +
-      infoRow('Método HTTP', 'Tipo de operação usada para o envio (POST é o padrão para webhooks)', d.method, 'green');
+    document.getElementById('modal-info').innerHTML = `
+      <div class="req-bar-row">
+        <span class="method-badge ${mClass}">${d.method || '—'}</span>
+        <span class="req-chip"><span class="req-chip-label">Lote</span>${escHtml(d.lote)}</span>
+        <span class="req-sep">·</span>
+        <span class="req-chip">${escHtml(d.timestamp)}</span>
+        <span class="req-sep">·</span>
+        <span class="req-chip">${d.tamanho_kb ? d.tamanho_kb.toFixed(2)+' KB' : '—'}</span>
+        <span class="req-sep">·</span>
+        <span class="req-chip">${d.tempo_ms ? d.tempo_ms.toFixed(0)+' ms' : '—'}</span>
+      </div>
+      <div class="req-bar-row">
+        <span class="req-chip"><span class="req-chip-label">IP</span>${escHtml(d.ip || '—')}</span>
+        ${loc ? `<span class="req-sep">→</span><span class="req-chip">${escHtml(loc)}</span>` : ''}
+      </div>`;
 
-    document.getElementById('pre-payload').innerHTML = hl(d.payload || '(vazio)');
-    document.getElementById('pre-headers').innerHTML = hl(d.headers || '{}');
-    document.getElementById('pre-query').innerHTML   = hl(d.query_params || '{}');
+    renderPayload(d);
+    renderHeaders(d.headers);
+    renderQueryParams(d.query_params);
 
-    // reset tabs
     document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
     document.getElementById('pane-payload').classList.add('active');
