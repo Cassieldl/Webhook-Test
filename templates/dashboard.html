@@ -938,9 +938,33 @@ function renderQueryParams(qpStr) {
 
 /* ── OPEN MODAL ── */
 async function openModal(id) {
+  // Abre o modal imediatamente com estado de carregamento
+  document.getElementById('modal-title').textContent = `Carregando #${id}…`;
+  document.getElementById('modal-info').innerHTML = '';
+  document.getElementById('pane-payload').innerHTML =
+    '<div class="empty-pane"><div class="empty-pane-icon">⏳</div><div class="empty-pane-msg">Buscando dados…</div></div>';
+  document.getElementById('pane-headers').innerHTML = '';
+  document.getElementById('pane-query').innerHTML   = '';
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-payload').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+  document.getElementById('tab-hint').textContent = TAB_HINTS.payload;
+  document.getElementById('overlay').classList.add('open');
+
   try {
-    const d = await fetch(`/webhook/${id}`).then(r => r.json());
-    document.getElementById('modal-title').textContent = `Webhook #${d.id} — ${d.lote}`;
+    const resp = await fetch(`/webhook/${id}`);
+    if (!resp.ok) {
+      document.getElementById('pane-payload').innerHTML =
+        `<div class="empty-pane"><div class="empty-pane-icon">⚠️</div>
+         <div class="empty-pane-msg">Erro ao buscar registro</div>
+         <div class="empty-pane-sub">HTTP ${resp.status} — ${resp.statusText || 'sem detalhes'}</div></div>`;
+      document.getElementById('modal-title').textContent = `Webhook #${id} — erro`;
+      return;
+    }
+    const d = await resp.json();
+
+    document.getElementById('modal-title').textContent = `Webhook #${d.id} — ${d.lote || '(sem lote)'}`;
 
     const loc = [d.cidade, d.regiao, d.pais].filter(x => x && x !== '—').join(', ') || null;
     const mClass = 'method-' + (d.method || 'get').toLowerCase();
@@ -948,13 +972,13 @@ async function openModal(id) {
     document.getElementById('modal-info').innerHTML = `
       <div class="req-bar-row">
         <span class="method-badge ${mClass}">${d.method || '—'}</span>
-        <span class="req-chip"><span class="req-chip-label">Lote</span>${escHtml(d.lote)}</span>
+        <span class="req-chip"><span class="req-chip-label">Lote</span>${escHtml(d.lote || '—')}</span>
         <span class="req-sep">·</span>
-        <span class="req-chip">${escHtml(d.timestamp)}</span>
+        <span class="req-chip">${escHtml(d.timestamp || '—')}</span>
         <span class="req-sep">·</span>
-        <span class="req-chip">${d.tamanho_kb ? d.tamanho_kb.toFixed(2)+' KB' : '—'}</span>
+        <span class="req-chip">${d.tamanho_kb != null ? Number(d.tamanho_kb).toFixed(2)+' KB' : '—'}</span>
         <span class="req-sep">·</span>
-        <span class="req-chip">${d.tempo_ms ? d.tempo_ms.toFixed(0)+' ms' : '—'}</span>
+        <span class="req-chip">${d.tempo_ms != null ? Number(d.tempo_ms).toFixed(0)+' ms' : '—'}</span>
       </div>
       <div class="req-bar-row">
         <span class="req-chip"><span class="req-chip-label">IP</span>${escHtml(d.ip || '—')}</span>
@@ -965,15 +989,13 @@ async function openModal(id) {
     renderHeaders(d.headers);
     renderQueryParams(d.query_params);
 
-    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('pane-payload').classList.add('active');
-    document.querySelector('.tab').classList.add('active');
-    document.getElementById('tab-hint').textContent = TAB_HINTS.payload;
-
-    document.getElementById('overlay').classList.add('open');
   } catch(e) {
-    toast('Erro ao carregar detalhes', 'err');
+    console.error('openModal error:', e);
+    document.getElementById('pane-payload').innerHTML =
+      `<div class="empty-pane"><div class="empty-pane-icon">⚠️</div>
+       <div class="empty-pane-msg">Erro inesperado ao carregar</div>
+       <div class="empty-pane-sub">${escHtml(String(e))}</div></div>`;
+    document.getElementById('modal-title').textContent = `Webhook #${id} — erro`;
   }
 }
 
